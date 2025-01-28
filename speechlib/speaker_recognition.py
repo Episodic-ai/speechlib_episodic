@@ -12,8 +12,7 @@ else:
 # recognize speaker name
 def speaker_recognition(file_name, voices_folder, segments, wildcards):
 
-    #speakers = os.listdir(voices_folder)
-    speakers = os.listdir("voices/")
+    speakers = os.listdir(voices_folder)
 
     Id_count = defaultdict(int)
     # Load the WAV file
