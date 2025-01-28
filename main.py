@@ -35,19 +35,6 @@ async def transcribe_audio(file: UploadFile = File(...)):
     Accepts a WAV file and returns the transcription as text.
     """
     
-    '''
-    url = "https://firebasestorage.googleapis.com:443/v0/b/psychic-cascade-427812-e6.firebasestorage.app/o/audio%2F48266D10-64E4-4172-9C70-ABC1F6A1DE47.wav?alt=media&token=3eb2ddc9-acc0-4826-a8b8-87f0b98f2bfd"
-    
-    if "https://firebasestorage.googleapis.com" not in url:
-        raise ValueError("Invalid Firebase Storage URL")
-    
-    # download the wav file from the firebase storage url
-    response = requests.get(url, stream=True)
-    with open("firebase.wav", "wb") as out_file:
-        shutil.copyfileobj(response.raw, out_file)
-    del response
-    '''
-    
     # Validate the file type
     if not file.filename.endswith(".wav"):
         raise HTTPException(status_code=400, detail="Invalid file type. Please upload a .wav file.")
