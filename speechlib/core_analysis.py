@@ -108,6 +108,7 @@ def core_analysis(file_name, voices_folder, log_folder, language, modelSize, ACC
     for key in keys_to_remove:
         del speakers[key]
         del speaker_map[key]
+    
 
     # transcribing the texts differently according to speaker
     start_time = int(time.time())
@@ -131,7 +132,11 @@ def core_analysis(file_name, voices_folder, log_folder, language, modelSize, ACC
             if speaker == speaker_map[spk_tag]:
                 for segment in spk_segments:
                     if start == segment[0] and end == segment[1]:
-                        common_segments.append([start, end, segment[2], speaker])
+                        # if speaker is not unknown
+                        if speaker != 'unknown':
+                            common_segments.append([start, end, segment[2], speaker])
+                        else:
+                            common_segments.append([start, end, segment[2], spk_tag])
 
     # writing log file
     write_log_file(common_segments, log_folder, file_name, language)  
