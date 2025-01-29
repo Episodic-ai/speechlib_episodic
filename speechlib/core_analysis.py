@@ -77,6 +77,7 @@ def core_analysis(file_name, voices_folder, log_folder, language, modelSize, ACC
 
         start_time = int(time.time())
         print("running speaker recognition...")
+        print("voices folder: ", voices_folder)
         for spk_tag, spk_segments in speakers.items():
             spk_name = speaker_recognition(file_name, voices_folder, spk_segments, identified)
             spk = spk_name
