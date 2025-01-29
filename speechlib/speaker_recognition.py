@@ -46,7 +46,14 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
 
         for speaker in speakers:
 
-            voices = os.listdir(voices_folder + "/" + speaker)
+            #voices = os.listdir(voices_folder + "/" + speaker)
+            speaker_path = os.path.join(voices_folder, speaker)
+
+            # Ensure we only get files, avoiding directories
+            voices = [
+                v for v in os.listdir(speaker_path) 
+                if os.path.isfile(os.path.join(speaker_path, v))
+            ]
 
             for voice in voices:
                 voice_file = voices_folder + "/" + speaker + "/" + voice
