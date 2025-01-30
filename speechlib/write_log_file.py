@@ -48,12 +48,18 @@ def write_log_file(common_segments, log_folder, file_name, language):
             speaker_folder = os.path.join(unidentified_speakers_folder, speaker_uuid)
             os.makedirs(speaker_folder, exist_ok=True)
             
-            # Extract the audio segment
-            audio = AudioSegment.from_file(og_file_name, format="wav")
-            clip = audio[start * 1000 : end * 1000]
+            # Check if the folder already has 4 files
+            existing_files = [
+                f for f in os.listdir(speaker_folder) if os.path.isfile(os.path.join(speaker_folder, f))
+            ]
             
-            # Save the segment in the correct UUID folder
-            clip.export(os.path.join(speaker_folder, f"{start}_{end}_{file_name}.wav"), format="wav")
+            if len(existing_files) < 4:  # Only add if less than 4 files exist
+                # Extract the audio segment
+                audio = AudioSegment.from_file(og_file_name, format="wav")
+                clip = audio[start * 1000 : end * 1000]
+                
+                # Save the segment in the correct UUID folder
+                clip.export(os.path.join(speaker_folder, f"{start}_{end}_{file_name}.wav"), format="wav")
         
         if text:
             entry += f"{speaker_uuid_map[speaker]} ({start} : {end}) : {text}\n"
