@@ -6,8 +6,10 @@ import torch
 
 if torch.cuda.is_available():
     verification = SpeakerRecognition.from_hparams(run_opts={"device":"cuda"}, source="speechbrain/spkrec-ecapa-voxceleb", savedir="pretrained_models/spkrec-ecapa-voxceleb")
+    print(f"Using CUDA for Speaker Recognition")
 else:
     verification = SpeakerRecognition.from_hparams(run_opts={"device":"cpu"}, source="speechbrain/spkrec-ecapa-voxceleb", savedir="pretrained_models/spkrec-ecapa-voxceleb")
+    print(f"Using CPU for Speaker Recognition")
 
 # recognize speaker name
 def speaker_recognition(file_name, voices_folder, segments, wildcards):
