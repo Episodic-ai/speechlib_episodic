@@ -102,6 +102,7 @@ from pydub import AudioSegment
 from collections import defaultdict
 import torch
 import io
+import torchaudio
 
 # Initialize Speaker Recognition model
 if torch.cuda.is_available():
@@ -145,14 +146,25 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
         clip.export(buffer, format="wav")
         buffer.seek(0)
 
+        # Convert in-memory buffer to waveform tensor
+        waveform, sample_rate = torchaudio.load(buffer)
+
         max_score = 0
         person = "unknown"  # Default to unknown if no match is found
 
         for speaker, voice_files in speakers.items():
             for voice_file in voice_files:
                 try:
-                    # Compare voice file with audio segment in memory
-                    score, prediction = verification.verify_files(voice_file, buffer)
+                    # Convert voice file to waveform tensor
+                    voice_waveform, voice_sample_rate = torchaudio.load(voice_file)
+
+                    # Ensure both sample rates match
+                    if sample_rate != voice_sample_rate:
+                        transform = torchaudio.transforms.Resample(orig_freq=sample_rate, new_freq=voice_sample_rate)
+                        waveform = transform(waveform)
+
+                    # Pass waveforms directly to verify_batch()
+                    score, prediction = verification.verify_batch(voice_waveform, waveform)
                     prediction = prediction[0].item()
                     score = score[0].item()
 
@@ -173,4 +185,3 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
     
     most_common_Id = max(Id_count, key=Id_count.get)
     return most_common_Id
-
