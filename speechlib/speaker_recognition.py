@@ -13,6 +13,11 @@ else:
 
 # recognize speaker name
 def speaker_recognition(file_name, voices_folder, segments, wildcards):
+    
+    if torch.cuda.is_available():
+        print(f"Using CUDA for Speaker Recognition")
+    else:
+        print(f"Using CPU for Speaker Recognition")
 
     speakers = os.listdir(voices_folder)
 
