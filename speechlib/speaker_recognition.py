@@ -1,3 +1,4 @@
+"""
 from speechbrain.pretrained import SpeakerRecognition
 import os
 from pydub import AudioSegment
@@ -87,6 +88,85 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
 
         current_pred = max(Id_count, key=Id_count.get)
 
+        duration += (end - start)
+        if duration >= limit and current_pred != "unknown":
+            break
+    
+    most_common_Id = max(Id_count, key=Id_count.get)
+    return most_common_Id
+"""
+
+from speechbrain.pretrained import SpeakerRecognition
+import os
+from pydub import AudioSegment
+from collections import defaultdict
+import torch
+import io
+
+# Initialize Speaker Recognition model
+if torch.cuda.is_available():
+    verification = SpeakerRecognition.from_hparams(run_opts={"device": "cuda"}, source="speechbrain/spkrec-ecapa-voxceleb", savedir="pretrained_models/spkrec-ecapa-voxceleb")
+    print("Using CUDA for Speaker Recognition")
+else:
+    verification = SpeakerRecognition.from_hparams(run_opts={"device": "cpu"}, source="speechbrain/spkrec-ecapa-voxceleb", savedir="pretrained_models/spkrec-ecapa-voxceleb")
+    print("Using CPU for Speaker Recognition")
+
+# Cache speaker voice files to avoid repeated disk access
+def cache_speaker_voices(voices_folder):
+    speakers = {}
+    for speaker in os.listdir(voices_folder):
+        speaker_path = os.path.join(voices_folder, speaker)
+        if os.path.isdir(speaker_path):
+            speakers[speaker] = [os.path.join(speaker_path, v) for v in os.listdir(speaker_path) if os.path.isfile(os.path.join(speaker_path, v))]
+    return speakers
+
+# Recognize speaker name
+def speaker_recognition(file_name, voices_folder, segments, wildcards):
+    
+    # Cache speaker voice files to avoid scanning directories multiple times
+    speakers = cache_speaker_voices(voices_folder)
+    Id_count = defaultdict(int)
+    
+    # Load the WAV file
+    audio = AudioSegment.from_file(file_name, format="wav")
+    
+    limit = 60  # Limit the total duration processed
+    duration = 0
+    i = 0
+
+    for segment in segments:
+        start = segment[0] * 1000  # Convert start time to milliseconds
+        end = segment[1] * 1000    # Convert end time to milliseconds
+        clip = audio[start:end]
+        i += 1
+        
+        # Use in-memory buffer instead of writing to disk
+        buffer = io.BytesIO()
+        clip.export(buffer, format="wav")
+        buffer.seek(0)
+
+        max_score = 0
+        person = "unknown"  # Default to unknown if no match is found
+
+        for speaker, voice_files in speakers.items():
+            for voice_file in voice_files:
+                try:
+                    # Compare voice file with audio segment in memory
+                    score, prediction = verification.verify_files(voice_file, buffer)
+                    prediction = prediction[0].item()
+                    score = score[0].item()
+
+                    if prediction and score >= max_score:
+                        max_score = score
+                        speakerId = speaker.split(".")[0]
+                        if speakerId not in wildcards:  # Ensure unique speaker tag
+                            person = speakerId
+                except Exception as err:
+                    print("Error occurred while speaker recognition:", err)
+
+        Id_count[person] += 1
+
+        current_pred = max(Id_count, key=Id_count.get)
         duration += (end - start)
         if duration >= limit and current_pred != "unknown":
             break
