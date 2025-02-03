@@ -30,8 +30,12 @@ def core_analysis(file_name, voices_folder, log_folder, language, modelSize, ACC
 
     speaker_tags = []
     
+    start_time = int(time.time())
     pipeline = Pipeline.from_pretrained("pyannote/speaker-diarization@2.1",
                                     use_auth_token=ACCESS_TOKEN)
+    end_time = int(time.time())
+    elapsed_time = int(end_time - start_time)
+    print(f"pipeline loaded. Time taken: {elapsed_time} seconds.")
 
     if torch.cuda.is_available():
         device = torch.device("cuda")
@@ -79,7 +83,11 @@ def core_analysis(file_name, voices_folder, log_folder, language, modelSize, ACC
         print("running speaker recognition...")
         print("voices folder: ", voices_folder)
         for spk_tag, spk_segments in speakers.items():
+            start_time_segment = int(time.time())
             spk_name = speaker_recognition(file_name, voices_folder, spk_segments, identified)
+            end_time_segment = int(time.time())
+            elapsed_time_segment = int(end_time_segment - start_time_segment)
+            print(f"speaker {spk_tag} recognition done. Time taken: {elapsed_time_segment} seconds.")
             spk = spk_name
             identified.append(spk)
             speaker_map[spk_tag] = spk

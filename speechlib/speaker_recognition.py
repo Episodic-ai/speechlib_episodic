@@ -1,9 +1,9 @@
-"""
 from speechbrain.pretrained import SpeakerRecognition
 import os
 from pydub import AudioSegment
 from collections import defaultdict
 import torch
+import time
 
 if torch.cuda.is_available():
     verification = SpeakerRecognition.from_hparams(run_opts={"device":"cuda"}, source="speechbrain/spkrec-ecapa-voxceleb", savedir="pretrained_models/spkrec-ecapa-voxceleb")
@@ -23,8 +23,13 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
     speakers = os.listdir(voices_folder)
 
     Id_count = defaultdict(int)
+    
+    start_time = int(time.time())
     # Load the WAV file
     audio = AudioSegment.from_file(file_name, format="wav")
+    end_time = int(time.time())
+    elapsed_time = int(end_time - start_time)
+    print(f"audio loaded. Time taken: {elapsed_time} seconds.")
 
     folder_name = "/tmp"
 
@@ -42,12 +47,19 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
     duration = 0
 
     for segment in segments:
+        
+        start_time = int(time.time())
+        
         start = segment[0] * 1000   # start time in miliseconds
         end = segment[1] * 1000     # end time in miliseconds
         clip = audio[start:end]
         i = i + 1
         file = folder_name + "/" + file_name.split("/")[-1].split(".")[0] + "_segment"+ str(i) + ".wav"
         clip.export(file, format="wav")
+        
+        end_time = int(time.time())
+        elapsed_time = int(end_time - start_time)
+        print(f"segment {i} exported. Time taken: {elapsed_time} seconds.")
 
         max_score = 0
         person = "unknown"      # if no match to any voice, then return unknown
@@ -67,10 +79,14 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
                 voice_file = voices_folder + "/" + speaker + "/" + voice
 
                 try:
+                    start_time = int(time.time())
                     # compare voice file with audio file
                     score, prediction = verification.verify_files(voice_file, file)
                     prediction = prediction[0].item()
                     score = score[0].item()
+                    end_time = int(time.time())
+                    elapsed_time = int(end_time - start_time)
+                    print(f"speaker {speaker} compared. Time taken: {elapsed_time} seconds.")
 
                     if prediction == True:
                         if score >= max_score:
@@ -94,10 +110,10 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
     
     most_common_Id = max(Id_count, key=Id_count.get)
     return most_common_Id
-"""
 
 
 
+'''
 from speechbrain.pretrained import SpeakerRecognition
 import os
 from pydub import AudioSegment
@@ -187,3 +203,4 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
     
     most_common_Id = max(Id_count, key=Id_count.get)
     return most_common_Id
+'''
