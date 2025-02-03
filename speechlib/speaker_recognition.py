@@ -1,4 +1,3 @@
-"""
 from speechbrain.pretrained import SpeakerRecognition
 import os
 from pydub import AudioSegment
@@ -94,8 +93,9 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
     
     most_common_Id = max(Id_count, key=Id_count.get)
     return most_common_Id
-"""
 
+
+"""
 from speechbrain.pretrained import SpeakerRecognition
 import os
 from pydub import AudioSegment
@@ -185,3 +185,4 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
     
     most_common_Id = max(Id_count, key=Id_count.get)
     return most_common_Id
+"""
