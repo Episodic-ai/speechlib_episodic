@@ -25,7 +25,7 @@ def speaker_recognition(file_name, voices_folder, segments, wildcards):
     # Load the WAV file
     audio = AudioSegment.from_file(file_name, format="wav")
 
-    folder_name = "temp"
+    folder_name = "/tmp"
 
     if not os.path.exists(folder_name):
         os.makedirs(folder_name)
